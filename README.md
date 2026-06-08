@@ -3,7 +3,7 @@
 Persistent leaderboard for `YoyoCaleb_` Twitch chat. The server connects to Twitch chat as an anonymous reader, listens for Nightbot messages like:
 
 ```text
-bredst1cks has spaffed 9.8 ft - not bad
+undove has spaffed 9.8 ft - not bad
 ```
 
 It stores captures in `data/scores.json` and serves a public leaderboard website.
