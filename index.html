@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spaff Leaderboard</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111215;
+      --panel: #1b1d22;
+      --panel-2: #22252c;
+      --line: #373b45;
+      --text: #f4f5f7;
+      --muted: #aeb4c0;
+      --green: #4ddd8a;
+      --blue: #61a8ff;
+      --red: #ff6969;
+      --gold: #f4c85e;
+      --ink: #0b0c0f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .shell {
+      width: min(1160px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: end;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 4rem);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .subhead {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 720px;
+      line-height: 1.45;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 4px rgb(255 105 105 / 14%);
+    }
+
+    .status.live .dot {
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgb(77 221 138 / 14%);
+    }
+
+    .header-tools {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    main {
+      margin-top: 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .controls {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #111319;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgb(97 168 255 / 18%);
+    }
+
+    textarea {
+      min-height: 190px;
+      resize: vertical;
+      line-height: 1.35;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      min-height: 42px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--ink);
+      background: var(--green);
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    button.warn {
+      color: var(--text);
+      background: #392129;
+      border: 1px solid #70404d;
+    }
+
+    button.compact {
+      min-height: 40px;
+      padding: 0 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+      min-height: 88px;
+      padding: 15px;
+      border-right: 1px solid var(--line);
+      display: grid;
+      align-content: center;
+      gap: 4px;
+    }
+
+    .stat:last-child {
+      border-right: 0;
+    }
+
+    .stat strong {
+      font-size: 1.55rem;
+      letter-spacing: 0;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .leaderboard {
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      background: #17191e;
+    }
+
+    td.number,
+    th.number {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .rank {
+      width: 58px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .user {
+      font-weight: 900;
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    .best {
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    .empty {
+      padding: 42px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .feed {
+      margin-top: 18px;
+      padding: 14px 16px;
+      max-height: 230px;
+      overflow: auto;
+    }
+
+    .feed h2 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .event {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 9px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .event:first-of-type {
+      border-top: 0;
+    }
+
+    .event b {
+      color: var(--text);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: #263446;
+      color: #c9dfff;
+      font-size: 0.82rem;
+      font-weight: 800;
+      width: fit-content;
+    }
+
+    @media (max-width: 860px) {
+      header {
+        grid-template-columns: 1fr;
+      }
+
+      .header-tools,
+      .status {
+        width: fit-content;
+        justify-content: flex-start;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .stat:nth-child(2) {
+        border-right: 0;
+      }
+
+      .stat:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .shell {
+        width: min(100vw - 20px, 1160px);
+        padding-top: 18px;
+      }
+
+      .row,
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      th,
+      td {
+        padding: 11px 9px;
+        font-size: 0.9rem;
+      }
+
+      .hide-small {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>Spaff Leaderboard</h1>
+        <p class="subhead">Live stats for YoyoCaleb_ chat. Nightbot results are captured automatically and averaged by chatter.</p>
+      </div>
+      <div class="header-tools">
+        <div class="status" id="status">
+          <span class="dot"></span>
+          <span id="statusText">Offline</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="panel leaderboard">
+          <div class="stats">
+            <div class="stat">
+              <strong id="totalRuns">0</strong>
+              <span>Total runs</span>
+            </div>
+            <div class="stat">
+              <strong id="totalUsers">0</strong>
+              <span>Chatters</span>
+            </div>
+            <div class="stat">
+              <strong id="overallAvg">0.0 ft</strong>
+              <span>Overall avg</span>
+            </div>
+            <div class="stat">
+              <strong id="topScore">0.0 ft</strong>
+              <span>Top avg</span>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th class="rank">#</th>
+                <th>User</th>
+                <th class="number">Average</th>
+                <th class="number hide-small">Runs</th>
+                <th class="number hide-small">Best</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody"></tbody>
+          </table>
+          <div class="empty" id="emptyState">Waiting for Nightbot results in YoyoCaleb_ chat.</div>
+        </div>
+
+        <div class="panel feed">
+          <h2>Recent captures</h2>
+          <div id="feedBody" class="empty">Nothing captured yet.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const els = {
+      status: document.getElementById("status"),
+      statusText: document.getElementById("statusText"),
+      totalRuns: document.getElementById("totalRuns"),
+      totalUsers: document.getElementById("totalUsers"),
+      overallAvg: document.getElementById("overallAvg"),
+      topScore: document.getElementById("topScore"),
+      leaderboardBody: document.getElementById("leaderboardBody"),
+      emptyState: document.getElementById("emptyState"),
+      feedBody: document.getElementById("feedBody"),
+    };
+
+    function formatFeet(value) {
+      return `${Number(value || 0).toFixed(1)} ft`;
+    }
+
+    function render(data) {
+      const rows = data.leaderboard || [];
+
+      els.totalRuns.textContent = data.totalRuns || 0;
+      els.totalUsers.textContent = data.totalUsers || 0;
+      els.overallAvg.textContent = formatFeet(data.overallAverage);
+      els.topScore.textContent = formatFeet(data.topAverage);
+      els.emptyState.hidden = rows.length > 0;
+
+      els.leaderboardBody.innerHTML = rows.map((row, index) => `
+        <tr>
+          <td class="rank">${index + 1}</td>
+          <td class="user">${row.user}</td>
+          <td class="number best">${formatFeet(row.average)}</td>
+          <td class="number hide-small">${row.runs}</td>
+          <td class="number hide-small">${formatFeet(row.best)}</td>
+        </tr>
+      `).join("");
+
+      const recent = data.recent || [];
+      els.feedBody.className = recent.length ? "" : "empty";
+      els.feedBody.innerHTML = recent.length
+        ? recent.map((entry) => `
+          <div class="event">
+            <span><b>${entry.user}</b> has spaffed</span>
+            <strong>${formatFeet(entry.value)}</strong>
+          </div>
+        `).join("")
+        : "Nothing captured yet.";
+    }
+
+    function setStatus(text, live) {
+      els.statusText.textContent = text;
+      els.status.classList.toggle("live", live);
+    }
+
+    async function loadLeaderboard() {
+      try {
+        const response = await fetch("/api/leaderboard", { cache: "no-store" });
+        if (!response.ok) throw new Error("Request failed");
+
+        const data = await response.json();
+        render(data);
+        setStatus(data.chatStatus === "live" ? `Live in ${data.channel}` : data.chatStatus, data.chatStatus === "live");
+      } catch {
+        setStatus("Server unavailable", false);
+      }
+    }
+
+    render({});
+    loadLeaderboard();
+    setInterval(loadLeaderboard, 3000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "spaff-leaderboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Persistent Twitch chat leaderboard for YoyoCaleb_ Nightbot spaff results.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
