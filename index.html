@@ -60,8 +60,23 @@
       letter-spacing: 0;
     }
 
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .caleb-photo {
+      width: clamp(58px, 8vw, 86px);
+      aspect-ratio: 1;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
     .subhead {
-      margin: 10px 0 0;
+      margin: 18px 0 0;
       color: var(--muted);
       max-width: 720px;
       line-height: 1.45;
@@ -191,8 +206,8 @@
     }
 
     .toolbar {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 8px;
       padding: 12px;
       border-bottom: 1px solid var(--line);
@@ -200,8 +215,9 @@
     }
 
     .range-button {
-      min-height: 36px;
-      padding: 0 12px;
+      width: 100%;
+      min-height: 46px;
+      padding: 0 10px;
       color: var(--text);
       background: var(--panel-2);
       border: 1px solid var(--line);
@@ -307,6 +323,21 @@
       font-weight: 800;
     }
 
+    tr.place-1 .rank,
+    tr.place-1 .user {
+      color: var(--gold);
+    }
+
+    tr.place-2 .rank,
+    tr.place-2 .user {
+      color: #d4d8df;
+    }
+
+    tr.place-3 .rank,
+    tr.place-3 .user {
+      color: #d79a64;
+    }
+
     .user {
       font-weight: 900;
       color: var(--text);
@@ -352,6 +383,14 @@
 
     .event b {
       color: var(--text);
+    }
+
+    .event-meta {
+      display: block;
+      margin-top: 3px;
+      color: #858d99;
+      font-size: 0.78rem;
+      font-weight: 700;
     }
 
     .hint {
@@ -418,6 +457,18 @@
       .hide-small {
         display: none;
       }
+
+      .brand-row {
+        align-items: flex-start;
+      }
+
+      .caleb-photo {
+        width: 56px;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -425,8 +476,11 @@
   <div class="shell">
     <header>
       <div>
-        <h1>Spaff Leaderboard</h1>
-        <p class="subhead">Live stats for YoyoCaleb_ chat. Nightbot results are captured automatically and averaged by chatter.</p>
+        <div class="brand-row">
+          <img class="caleb-photo" src="caleb.png" alt="YoyoCaleb_" onerror="this.remove()">
+          <h1>Spaff Leaderboard</h1>
+        </div>
+        <p class="subhead">Live stats for YoyoCaleb's chat. Nightbot results are captured automatically and averaged by chatter.</p>
       </div>
       <div class="header-tools">
         <div class="status" id="status">
@@ -450,7 +504,7 @@
           <div class="stats">
             <div class="stat">
               <strong id="totalRuns">0</strong>
-              <span>Total runs</span>
+              <span>Total spaffs</span>
             </div>
             <div class="stat">
               <strong id="totalUsers">0</strong>
@@ -472,7 +526,7 @@
                 <th class="rank">#</th>
                 <th>User</th>
                 <th class="number"><button data-sort="average">Average <span class="sort-mark" data-sort-mark="average"></span></button></th>
-                <th class="number hide-small"><button data-sort="runs">Runs <span class="sort-mark" data-sort-mark="runs"></span></button></th>
+                <th class="number hide-small"><button data-sort="runs">Spaffs <span class="sort-mark" data-sort-mark="runs"></span></button></th>
                 <th class="number hide-small"><button data-sort="best">Best <span class="sort-mark" data-sort-mark="best"></span></button></th>
               </tr>
             </thead>
@@ -516,6 +570,18 @@
       return `${Number(value || 0).toFixed(1)} ft`;
     }
 
+    function formatTimestamp(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+
+      return new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }).format(date);
+    }
+
     function sortedRows(rows) {
       const direction = state.sortDirection === "asc" ? 1 : -1;
 
@@ -554,7 +620,7 @@
       els.emptyState.hidden = rows.length > 0;
 
       els.leaderboardBody.innerHTML = rows.map((row, index) => `
-        <tr>
+        <tr class="place-${index + 1}">
           <td class="rank">${index + 1}</td>
           <td class="user">${row.user}</td>
           <td class="number best">${formatFeet(row.average)}</td>
@@ -568,7 +634,10 @@
       els.feedBody.innerHTML = recent.length
         ? recent.map((entry) => `
           <div class="event">
-            <span><b>${entry.user}</b> has spaffed</span>
+            <span>
+              <b>${entry.user}</b> has spaffed
+              <span class="event-meta">${formatTimestamp(entry.capturedAt)}</span>
+            </span>
             <strong>${formatFeet(entry.value)}</strong>
           </div>
         `).join("")

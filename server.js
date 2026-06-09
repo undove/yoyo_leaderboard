@@ -4,7 +4,8 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 
 const PORT = Number(process.env.PORT || 3000);
-const CHANNEL = (process.env.TWITCH_CHANNEL || "YoyoCaleb_").toLowerCase();
+const CHANNEL_DISPLAY = process.env.TWITCH_CHANNEL || "YoyoCaleb_";
+const CHANNEL = CHANNEL_DISPLAY.toLowerCase();
 const BOT_NAME = (process.env.TWITCH_BOT_NAME || "nightbot").toLowerCase();
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "scores.json");
@@ -96,7 +97,7 @@ function buildStats(range = "all") {
   const total = filteredEntries.reduce((sum, entry) => sum + entry.value, 0);
 
   return {
-    channel: CHANNEL,
+    channel: CHANNEL_DISPLAY,
     botName: BOT_NAME,
     range: RANGE_WINDOWS[range] ? range : "all",
     chatStatus,
