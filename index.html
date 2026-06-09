@@ -109,6 +109,12 @@
       box-shadow: 0 0 0 4px rgb(255 105 105 / 14%);
     }
 
+    .channel-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
     .twitch-icon {
       width: 18px;
       height: 18px;
@@ -500,8 +506,11 @@
       <div class="header-tools">
         <a class="status" id="status" href="https://www.twitch.tv/yoyocaleb_" target="_blank" rel="noopener noreferrer" aria-label="Open YoyoCaleb_ on Twitch">
           <span class="dot"></span>
-          <img class="twitch-icon" id="twitchIcon" src="twitch.png" alt="">
-          <span id="statusText">Offline</span>
+          <span id="statusPrefix">Offline</span>
+          <span class="channel-wrap" id="channelWrap" hidden>
+            <img class="twitch-icon" id="twitchIcon" src="twitch.png" alt="">
+            <span id="statusChannel">YoyoCaleb_</span>
+          </span>
         </a>
       </div>
     </header>
@@ -576,7 +585,9 @@
       calebPhoto: document.getElementById("calebPhoto"),
       twitchIcon: document.getElementById("twitchIcon"),
       status: document.getElementById("status"),
-      statusText: document.getElementById("statusText"),
+      statusPrefix: document.getElementById("statusPrefix"),
+      statusChannel: document.getElementById("statusChannel"),
+      channelWrap: document.getElementById("channelWrap"),
       totalRuns: document.getElementById("totalRuns"),
       totalUsers: document.getElementById("totalUsers"),
       overallAvg: document.getElementById("overallAvg"),
@@ -691,8 +702,10 @@
       updateControls();
     }
 
-    function setStatus(text, live) {
-      els.statusText.textContent = text;
+    function setStatus(text, live, channel = "") {
+      els.statusPrefix.textContent = live ? "Live in" : text;
+      els.statusChannel.textContent = channel;
+      els.channelWrap.hidden = !live;
       els.status.classList.toggle("live", live);
     }
 
@@ -703,7 +716,7 @@
 
         const data = await response.json();
         render(data);
-        setStatus(data.chatStatus === "live" ? `Live in ${data.channel}` : data.chatStatus, data.chatStatus === "live");
+        setStatus(data.chatStatus, data.chatStatus === "live", data.channel);
       } catch {
         setStatus("Server unavailable", false);
       }
