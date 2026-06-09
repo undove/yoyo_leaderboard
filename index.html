@@ -93,6 +93,12 @@
       background: var(--panel);
       color: var(--muted);
       white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .status:hover {
+      border-color: var(--blue);
+      color: var(--text);
     }
 
     .dot {
@@ -486,10 +492,10 @@
         <p class="subhead">Live stats for YoyoCaleb's chat. Nightbot results are captured automatically and averaged by chatter.</p>
       </div>
       <div class="header-tools">
-        <div class="status" id="status">
+        <a class="status" id="status" href="https://www.twitch.tv/yoyocaleb_" target="_blank" rel="noopener noreferrer" aria-label="Open YoyoCaleb_ on Twitch">
           <span class="dot"></span>
           <span id="statusText">Offline</span>
-        </div>
+        </a>
       </div>
     </header>
 
@@ -539,7 +545,7 @@
         </div>
 
         <div class="panel feed">
-          <h2>Recent captures</h2>
+          <h2>Recent spaffs</h2>
           <div id="feedBody" class="empty">Nothing captured yet.</div>
         </div>
       </section>
