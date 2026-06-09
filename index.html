@@ -190,6 +190,29 @@
       padding: 0 14px;
     }
 
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: #17191e;
+    }
+
+    .range-button {
+      min-height: 36px;
+      padding: 0 12px;
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    .range-button.active {
+      color: var(--ink);
+      background: var(--green);
+      border-color: var(--green);
+    }
+
     .stats {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -243,6 +266,29 @@
       text-transform: uppercase;
       letter-spacing: 0;
       background: #17191e;
+    }
+
+    th button {
+      width: 100%;
+      min-height: 24px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      text-align: inherit;
+      font-size: inherit;
+      text-transform: inherit;
+      cursor: pointer;
+    }
+
+    th.number button {
+      text-align: right;
+    }
+
+    .sort-mark {
+      display: inline-block;
+      min-width: 1.1em;
+      color: var(--green);
     }
 
     td.number,
@@ -393,6 +439,14 @@
     <main>
       <section>
         <div class="panel leaderboard">
+          <div class="toolbar" aria-label="Leaderboard range">
+            <button class="range-button active" data-range="daily">Daily</button>
+            <button class="range-button" data-range="weekly">Weekly</button>
+            <button class="range-button" data-range="monthly">Monthly</button>
+            <button class="range-button" data-range="yearly">Yearly</button>
+            <button class="range-button" data-range="all">All time</button>
+          </div>
+
           <div class="stats">
             <div class="stat">
               <strong id="totalRuns">0</strong>
@@ -417,9 +471,9 @@
               <tr>
                 <th class="rank">#</th>
                 <th>User</th>
-                <th class="number">Average</th>
-                <th class="number hide-small">Runs</th>
-                <th class="number hide-small">Best</th>
+                <th class="number"><button data-sort="average">Average <span class="sort-mark" data-sort-mark="average"></span></button></th>
+                <th class="number hide-small"><button data-sort="runs">Runs <span class="sort-mark" data-sort-mark="runs"></span></button></th>
+                <th class="number hide-small"><button data-sort="best">Best <span class="sort-mark" data-sort-mark="best"></span></button></th>
               </tr>
             </thead>
             <tbody id="leaderboardBody"></tbody>
@@ -436,6 +490,13 @@
   </div>
 
   <script>
+    const state = {
+      range: "daily",
+      sortKey: "average",
+      sortDirection: "desc",
+      data: {},
+    };
+
     const els = {
       status: document.getElementById("status"),
       statusText: document.getElementById("statusText"),
@@ -446,14 +507,45 @@
       leaderboardBody: document.getElementById("leaderboardBody"),
       emptyState: document.getElementById("emptyState"),
       feedBody: document.getElementById("feedBody"),
+      rangeButtons: [...document.querySelectorAll("[data-range]")],
+      sortButtons: [...document.querySelectorAll("[data-sort]")],
+      sortMarks: [...document.querySelectorAll("[data-sort-mark]")],
     };
 
     function formatFeet(value) {
       return `${Number(value || 0).toFixed(1)} ft`;
     }
 
+    function sortedRows(rows) {
+      const direction = state.sortDirection === "asc" ? 1 : -1;
+
+      return [...rows].sort((a, b) => {
+        const aValue = a[state.sortKey];
+        const bValue = b[state.sortKey];
+
+        if (typeof aValue === "number" && typeof bValue === "number") {
+          return (aValue - bValue) * direction || a.user.localeCompare(b.user);
+        }
+
+        return String(aValue).localeCompare(String(bValue)) * direction;
+      });
+    }
+
+    function updateControls() {
+      for (const button of els.rangeButtons) {
+        button.classList.toggle("active", button.dataset.range === state.range);
+      }
+
+      for (const mark of els.sortMarks) {
+        mark.textContent = mark.dataset.sortMark === state.sortKey
+          ? (state.sortDirection === "asc" ? "▲" : "▼")
+          : "";
+      }
+    }
+
     function render(data) {
-      const rows = data.leaderboard || [];
+      state.data = data;
+      const rows = sortedRows(data.leaderboard || []);
 
       els.totalRuns.textContent = data.totalRuns || 0;
       els.totalUsers.textContent = data.totalUsers || 0;
@@ -481,6 +573,8 @@
           </div>
         `).join("")
         : "Nothing captured yet.";
+
+      updateControls();
     }
 
     function setStatus(text, live) {
@@ -490,7 +584,7 @@
 
     async function loadLeaderboard() {
       try {
-        const response = await fetch("/api/leaderboard", { cache: "no-store" });
+        const response = await fetch(`/api/leaderboard?range=${encodeURIComponent(state.range)}`, { cache: "no-store" });
         if (!response.ok) throw new Error("Request failed");
 
         const data = await response.json();
@@ -499,6 +593,29 @@
       } catch {
         setStatus("Server unavailable", false);
       }
+    }
+
+    for (const button of els.rangeButtons) {
+      button.addEventListener("click", () => {
+        state.range = button.dataset.range;
+        updateControls();
+        loadLeaderboard();
+      });
+    }
+
+    for (const button of els.sortButtons) {
+      button.addEventListener("click", () => {
+        const nextKey = button.dataset.sort;
+
+        if (state.sortKey === nextKey) {
+          state.sortDirection = state.sortDirection === "asc" ? "desc" : "asc";
+        } else {
+          state.sortKey = nextKey;
+          state.sortDirection = "desc";
+        }
+
+        render(state.data);
+      });
     }
 
     render({});

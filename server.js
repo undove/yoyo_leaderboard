@@ -55,10 +55,30 @@ function addEntry(entry) {
   return true;
 }
 
-function buildStats() {
+const RANGE_WINDOWS = {
+  daily: 24 * 60 * 60 * 1000,
+  weekly: 7 * 24 * 60 * 60 * 1000,
+  monthly: 30 * 24 * 60 * 60 * 1000,
+  yearly: 365 * 24 * 60 * 60 * 1000,
+};
+
+function entryTime(entry) {
+  const time = Date.parse(entry.capturedAt || "");
+  return Number.isFinite(time) ? time : 0;
+}
+
+function filterEntries(range) {
+  if (!RANGE_WINDOWS[range]) return entries;
+
+  const cutoff = Date.now() - RANGE_WINDOWS[range];
+  return entries.filter((entry) => entryTime(entry) >= cutoff);
+}
+
+function buildStats(range = "all") {
+  const filteredEntries = filterEntries(range);
   const users = new Map();
 
-  for (const entry of entries) {
+  for (const entry of filteredEntries) {
     if (!users.has(entry.user)) {
       users.set(entry.user, { user: entry.user, total: 0, runs: 0, best: -Infinity });
     }
@@ -73,19 +93,20 @@ function buildStats() {
     .map((row) => ({ ...row, average: row.total / row.runs }))
     .sort((a, b) => b.average - a.average || b.best - a.best || a.user.localeCompare(b.user));
 
-  const total = entries.reduce((sum, entry) => sum + entry.value, 0);
+  const total = filteredEntries.reduce((sum, entry) => sum + entry.value, 0);
 
   return {
     channel: CHANNEL,
     botName: BOT_NAME,
+    range: RANGE_WINDOWS[range] ? range : "all",
     chatStatus,
     lastCapture,
-    totalRuns: entries.length,
+    totalRuns: filteredEntries.length,
     totalUsers: leaderboard.length,
-    overallAverage: entries.length ? total / entries.length : 0,
+    overallAverage: filteredEntries.length ? total / filteredEntries.length : 0,
     topAverage: leaderboard[0]?.average || 0,
     leaderboard,
-    recent: entries.slice(-10).reverse(),
+    recent: filteredEntries.slice(-10).reverse(),
     updatedAt: new Date().toISOString(),
   };
 }
@@ -187,7 +208,7 @@ const server = http.createServer((request, response) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
 
   if (url.pathname === "/api/leaderboard") {
-    sendJson(response, 200, buildStats());
+    sendJson(response, 200, buildStats(url.searchParams.get("range") || "all"));
     return;
   }
 
