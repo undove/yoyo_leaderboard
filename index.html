@@ -325,6 +325,10 @@
       color: var(--green);
     }
 
+    .sort-mark.lowest-first {
+      color: var(--red);
+    }
+
     td.number,
     th.number {
       text-align: right;
@@ -659,9 +663,9 @@
       }
 
       for (const mark of els.sortMarks) {
-        mark.textContent = mark.dataset.sortMark === state.sortKey
-          ? (state.sortDirection === "asc" ? "▲" : "▼")
-          : "";
+        const active = mark.dataset.sortMark === state.sortKey;
+        mark.textContent = active ? (state.sortDirection === "asc" ? "▲" : "▼") : "";
+        mark.classList.toggle("lowest-first", active && state.sortDirection === "asc");
       }
     }
 
