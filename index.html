@@ -109,6 +109,12 @@
       box-shadow: 0 0 0 4px rgb(255 105 105 / 14%);
     }
 
+    .twitch-icon {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+    }
+
     .status.live .dot {
       background: var(--green);
       box-shadow: 0 0 0 4px rgb(77 221 138 / 14%);
@@ -494,6 +500,7 @@
       <div class="header-tools">
         <a class="status" id="status" href="https://www.twitch.tv/yoyocaleb_" target="_blank" rel="noopener noreferrer" aria-label="Open YoyoCaleb_ on Twitch">
           <span class="dot"></span>
+          <img class="twitch-icon" id="twitchIcon" src="twitch.png" alt="">
           <span id="statusText">Offline</span>
         </a>
       </div>
@@ -559,12 +566,15 @@
       sortDirection: "desc",
       data: {},
       photoIndex: 0,
+      twitchIconIndex: 0,
     };
 
     const PHOTO_FILES = ["caleb.png", "Caleb.png", "caleb.PNG", "Caleb.PNG"];
+    const TWITCH_ICON_FILES = ["twitch.png", "Twitch.png", "twitch.PNG", "Twitch.PNG"];
 
     const els = {
       calebPhoto: document.getElementById("calebPhoto"),
+      twitchIcon: document.getElementById("twitchIcon"),
       status: document.getElementById("status"),
       statusText: document.getElementById("statusText"),
       totalRuns: document.getElementById("totalRuns"),
@@ -588,6 +598,17 @@
       }
 
       els.calebPhoto.src = PHOTO_FILES[state.photoIndex];
+    });
+
+    els.twitchIcon.addEventListener("error", () => {
+      state.twitchIconIndex += 1;
+
+      if (state.twitchIconIndex >= TWITCH_ICON_FILES.length) {
+        els.twitchIcon.remove();
+        return;
+      }
+
+      els.twitchIcon.src = TWITCH_ICON_FILES[state.twitchIconIndex];
     });
 
     function formatFeet(value) {
