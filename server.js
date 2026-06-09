@@ -10,6 +10,7 @@ const BOT_NAME = (process.env.TWITCH_BOT_NAME || "nightbot").toLowerCase();
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "scores.json");
 const TWITCH_IRC_URL = "wss://irc-ws.chat.twitch.tv:443";
+const MIN_LEADERBOARD_SPAFFS = 5;
 
 let entries = loadEntries();
 let chatSocket = null;
@@ -91,6 +92,7 @@ function buildStats(range = "all") {
   }
 
   const leaderboard = [...users.values()]
+    .filter((row) => row.runs >= MIN_LEADERBOARD_SPAFFS)
     .map((row) => ({ ...row, average: row.total / row.runs }))
     .sort((a, b) => b.average - a.average || b.best - a.best || a.user.localeCompare(b.user));
 
