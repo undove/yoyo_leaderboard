@@ -205,6 +205,48 @@ function serveStatic(response, fileName, contentType) {
   });
 }
 
+function serveAsset(response, urlPath) {
+  const safePath = path.normalize(decodeURIComponent(urlPath)).replace(/^(\.\.[/\\])+/, "");
+  const fileName = safePath.replace(/^[/\\]/, "");
+  const filePath = path.join(__dirname, fileName);
+
+  if (!filePath.startsWith(__dirname)) {
+    response.writeHead(404);
+    response.end("Not found");
+    return;
+  }
+
+  const extension = path.extname(filePath).toLowerCase();
+  const contentTypes = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+  };
+
+  const contentType = contentTypes[extension];
+  if (!contentType) {
+    response.writeHead(404);
+    response.end("Not found");
+    return;
+  }
+
+  fs.readFile(filePath, (error, content) => {
+    if (error) {
+      response.writeHead(404);
+      response.end("Not found");
+      return;
+    }
+
+    response.writeHead(200, {
+      "content-type": contentType,
+      "cache-control": "public, max-age=300",
+    });
+    response.end(content);
+  });
+}
+
 const server = http.createServer((request, response) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
 
@@ -223,8 +265,8 @@ const server = http.createServer((request, response) => {
     return;
   }
 
-  response.writeHead(404);
-  response.end("Not found");
+  serveAsset(response, url.pathname);
+  return;
 });
 
 server.listen(PORT, () => {

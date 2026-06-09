@@ -324,17 +324,20 @@
     }
 
     tr.place-1 .rank,
-    tr.place-1 .user {
+    tr.place-1 .user,
+    tr.place-1 .best {
       color: var(--gold);
     }
 
     tr.place-2 .rank,
-    tr.place-2 .user {
+    tr.place-2 .user,
+    tr.place-2 .best {
       color: #d4d8df;
     }
 
     tr.place-3 .rank,
-    tr.place-3 .user {
+    tr.place-3 .user,
+    tr.place-3 .best {
       color: #d79a64;
     }
 
@@ -345,7 +348,7 @@
     }
 
     .best {
-      color: var(--gold);
+      color: var(--text);
       font-weight: 900;
     }
 
@@ -477,7 +480,7 @@
     <header>
       <div>
         <div class="brand-row">
-          <img class="caleb-photo" src="caleb.png" alt="YoyoCaleb_" onerror="this.remove()">
+          <img class="caleb-photo" id="calebPhoto" src="caleb.png" alt="YoyoCaleb_">
           <h1>Spaff Leaderboard</h1>
         </div>
         <p class="subhead">Live stats for YoyoCaleb's chat. Nightbot results are captured automatically and averaged by chatter.</p>
@@ -549,9 +552,13 @@
       sortKey: "average",
       sortDirection: "desc",
       data: {},
+      photoIndex: 0,
     };
 
+    const PHOTO_FILES = ["caleb.png", "Caleb.png", "caleb.PNG", "Caleb.PNG"];
+
     const els = {
+      calebPhoto: document.getElementById("calebPhoto"),
       status: document.getElementById("status"),
       statusText: document.getElementById("statusText"),
       totalRuns: document.getElementById("totalRuns"),
@@ -565,6 +572,17 @@
       sortButtons: [...document.querySelectorAll("[data-sort]")],
       sortMarks: [...document.querySelectorAll("[data-sort-mark]")],
     };
+
+    els.calebPhoto.addEventListener("error", () => {
+      state.photoIndex += 1;
+
+      if (state.photoIndex >= PHOTO_FILES.length) {
+        els.calebPhoto.remove();
+        return;
+      }
+
+      els.calebPhoto.src = PHOTO_FILES[state.photoIndex];
+    });
 
     function formatFeet(value) {
       return `${Number(value || 0).toFixed(1)} ft`;
